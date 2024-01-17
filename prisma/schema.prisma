@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TIPOCLIENTE {
+ASSINANTE
+COMUM
+
+}
+enum Status {
+ ATIVO
+ DESATIVO
+}
+enum Acesso {
+  BARBEIRO
+  PROFISSIONAL 
+  CLIENTE
+}
+enum StatusRECEP {
+ CONCLUIDO
+ CANCELADO
+ RECEPCIONADO
+ NAO_CONCLUIDO
+}
+
+model Usuario{
+id String @id @default(uuid())
+email String
+senha String
+nome String
+acesso Acesso 
+cliente Cliente?
+profissional Profissional?
+barbeiro Barbearia?
+}
+
+model Barbearia{
+id String @id @default(uuid())
+profissionais Profissional[]
+usuarioId String @unique
+usuario Usuario @relation(fields: [usuarioId], references: [id])
+cortes Cortes[]
+clientes Cliente[]
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+}
+
+model Profissional{
+id String @id @default(uuid())
+barbeariaId String
+barbearia Barbearia @relation(fields: [barbeariaId], references: [id])
+agendamentos Agendamento[]
+
+usuarioId String @unique
+usuario Usuario @relation(fields: [usuarioId], references: [id])
+created_at DateTime @default(now())
+updated_at DateTime @default(now())
+}
+model Cliente{
+id String @id @default(uuid())
+barbeariaId String
+barbearia Barbearia @relation(fields: [barbeariaId], references: [id])
+agendamentos Agendamento[]
+subscription Subscription?
+usuarioId String @unique
+usuario Usuario @relation(fields: [usuarioId], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+}
+model Servico{
+  id String @default(uuid()) @id
+  quantidade Int
+  corteId String
+  agendaId String
+  agenda Agendamento @relation(fields: [agendaId], references: [id])
+    corte Cortes  @relation(fields: [corteId], references: [id])
+
+      created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+}
+
+model Agendamento{
+  id String @default(uuid()) @id
+  clienteId String?
+  profissionalId String  
+  agendaId String
+  servicos Servico[]
+  status StatusRECEP
+  agenda Agenda  @relation(fields: [agendaId], references: [id])
+  profissional Profissional  @relation(fields: [profissionalId], references: [id])
+  cliente Cliente?  @relation(fields: [clienteId], references: [id])
+  data DateTime
+
+    created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+}
+
+model Agenda{
+   id String @default(uuid()) @id
+   data DateTime @default(now())
+   agendamentos Agendamento[]
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+}
+
+
+model  Cortes{
+id String @id @default(uuid())
+valor String
+status String
+barbeariaId String
+servicos Servico[]
+barbearia Barbearia @relation(fields: [barbeariaId], references: [id])
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+}
+
+model Subscription{
+  id String @id
+  status String
+  priceId String
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  @@map("subscriptions")  
+
+  clienteId String @unique
+  cliente Cliente @relation(fields: [clienteId], references: [id])
+}
+
+
